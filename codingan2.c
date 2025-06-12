@@ -43,3 +43,25 @@ typedef struct node {
     struct node *next;
 } node;
 
+void inisialisasiSistem();
+void customerMenu();
+void registerCustomer();
+void loginCustomer();
+void tampilkanJadwal();
+void cariJadwal();
+void bookingTiket();
+void lihatPesanan();
+void batalkanBooking();
+void lihatHistoryBooking();
+void tampilkanPetaKursi(Schedule* schedule);
+Customer* cariPenumpang(int id);
+Schedule* cariJadwal(int id);
+Seat* buatlistKursi(int totalSeats);
+void pushHistory(int bookingId, int customerId, int scheduleId, int seatNumber, char* customerName, char* route, float price, char* status);
+void batalkanPemesanan(int bookingId, char* customerName, char* reason);
+BookingNode* tambahkanNodeBooking(BookingNode* root, int bookingId, int customerId, Schedule* schedule, Customer* customer, int seatNumber, char* status);
+BookingNode* cariNodeBooking(BookingNode* root, int bookingId);
+BookingNode* cariPesananPenumpang(BookingNode* root, int customerId);
+void tampilkanPesananPenumpang(BookingNode* root, int customerId);
+void tanggalSekarang(char* buffer);
+void waktuSekaranf(char* buffer);
