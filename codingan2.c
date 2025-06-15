@@ -6,6 +6,7 @@
 
 #define MAX_NAMA 100
 #define MAX_KURSI 100
+#define FILE_NAMA_PELANGGAN "pelanggan.txt"
 
 // Struktur untuk data pelanggan
 typedef struct Pelanggan {
@@ -88,6 +89,8 @@ int nextIdPelanggan = 1;
 
 // Function prototypes
 void inisialisasiSistem();
+void loadPelanggan();
+void savePelanggan();   
 void menuPelanggan();
 void daftarPelanggan();
 void loginPelanggan();
@@ -114,6 +117,7 @@ Pelanggan* pelangganSaatIni = NULL;
 
 int main() {
     inisialisasiSistem();
+    loadPelanggan();
     menuPelanggan();
     return 0;
 }
@@ -184,6 +188,80 @@ void inisialisasiSistem() {
     printf("Tersedia %d jadwal kereta untuk hari ini.\n\n", 4);
 }
 
+void loadPelanggan() {
+    printf("Mencoba memuat data pelanggan...\n"); // Debug print
+    FILE *file = fopen(FILE_NAMA_PELANGGAN, "r");
+    if (file == NULL) {
+        perror("Error saat membuka file pelanggan.txt untuk memuat"); // Lebih spesifik
+        printf("File data pelanggan tidak ditemukan. Membuat file baru.\n");
+        return;
+    }
+
+    Pelanggan* current = headPelanggan;
+    Pelanggan* next;
+    while (current != NULL) {
+        next = current->next;
+        free(current);
+        current = next;
+    }
+    headPelanggan = NULL;
+
+    int tempId;
+    char tempNama[MAX_NAMA], tempTelepon[15], tempEmail[MAX_NAMA], tempAlamat[MAX_NAMA];
+    int accountCount = 0;
+    nextIdPelanggan = 1; // Reset nextIdPelanggan
+
+    while (fscanf(file, "%d\n%[^\n]\n%[^\n]\n%[^\n]\n", &tempId, tempNama, tempTelepon, tempEmail, tempAlamat) == 5){
+        Pelanggan* newPelanggan = (Pelanggan*)malloc(sizeof(Pelanggan));
+        if(newPelanggan == NULL) {
+            printf("Gagal alokasi memori saat memuat pelanggan.\n");
+            break;
+        }
+        newPelanggan->id = tempId;
+        strcpy(newPelanggan->nama, tempNama);
+        strcpy(newPelanggan->telepon, tempTelepon);
+        strcpy(newPelanggan->email, tempEmail);
+        strcpy(newPelanggan->alamat, tempAlamat);
+        newPelanggan->next = NULL;
+
+        if (headPelanggan = NULL) {
+            headPelanggan = newPelanggan;
+        } else {
+            Pelanggan* last = headPelanggan;
+            while (last->next != NULL) {
+                last = last->next;
+            }
+            last->next = newPelanggan;
+        }
+    }
+    if (tempId >= nextIdPelanggan) {
+        nextIdPelanggan = tempId + 1; // Update nextIdPelanggan jika ada pelanggan yang dimuat
+    }
+    printf("Berhasil memuat %d akun dari %s.\n", accountCount, FILE_NAMA_PELANGGAN); // Debug print
+    fclose(file);
+}
+
+
+void savePelanggan() {
+    FILE *file = fopen(FILE_NAMA_PELANGGAN, "w");
+    if (file == NULL) {
+        perror("Error saat membuka file pelanggan.txt untuk menyimpan"); 
+        return;
+    }
+
+    Pelanggan* current = headPelanggan; 
+    while (current != NULL) { 
+        fprintf(file, "%d\n", current->id);  
+        fprintf(file, "%s\n", current->nama);  
+        fprintf(file, "%s\n", current->telepon); 
+        fprintf(file, "%s\n", current->email); 
+        fprintf(file, "%s\n", current->alamat); 
+        current = current->next; 
+    }
+    fclose(file);
+    printf("Data pelanggan berhasil disimpan ke %s.\n", FILE_NAMA_PELANGGAN);
+}
+
 void menuPelanggan() {
     int pilihan;
     
@@ -214,6 +292,7 @@ void menuPelanggan() {
                     break;
                 case 0:
                     printf("Terima kasih telah menggunakan layanan Whoosh!\n");
+                    savePelanggan(); // Simpan data pelanggan sebelum keluar
                     exit(0);
                 default:
                     printf("Pilihan tidak valid!\n");
@@ -257,6 +336,7 @@ void menuPelanggan() {
                     break;
                 case 0:
                     printf("Terima kasih telah menggunakan layanan Whoosh!\n");
+                    savePelanggan(); // Simpan data pelanggan sebelum keluar
                     exit(0);
                 default:
                     printf("Pilihan tidak valid!\n");
@@ -294,11 +374,13 @@ void daftarPelanggan() {
     printf("ID Pelanggan: %d\n", newPelanggan->id);
     printf("Nama: %s\n", newPelanggan->nama);
     printf("Silakan login untuk melanjutkan.\n");
+
+    savePelanggan(); // Simpan data pelanggan ke file
 }
 
 void loginPelanggan() {
     int idPelanggan;
-    char telepon[15];
+    char telepon[MAX_NAMA];
     
     printf("\n=== LOGIN PELANGGAN ===\n");
     printf("ID Pelanggan: ");
@@ -306,10 +388,20 @@ void loginPelanggan() {
     getchar(); // Membersihkan newline character
     
     printf("Nomor Telepon: ");
-    fgets(telepon, 15, stdin);
+    fgets(telepon, sizeof(telepon), stdin);
     telepon[strcspn(telepon, "\n")] = 0;
     
     Pelanggan* pelanggan = cariPelangganById(idPelanggan);
+
+    printf("DEBUG: ID Pelanggan Input: %d\n", idPelanggan);
+    printf("DEBUG: Nomor Telepon Input: '%s'\n", telepon);
+    
+    if(pelanggan != NULL){
+        printf("DEBUG: Pelanggan ditemukan. ID: %d, Nama: %s\n", pelanggan->id, pelanggan->nama);
+        printf("DEBUG: Nomor Telepon dari File: '%s'\n", pelanggan->telepon);
+    } else {
+        printf("DEBUG: Pelanggan dengan ID %d tidak ditemukan di memori.\n", idPelanggan);
+    }
     
     if(pelanggan != NULL && strcmp(pelanggan->telepon, telepon) == 0) {
         pelangganSaatIni = pelanggan;
@@ -321,7 +413,16 @@ void loginPelanggan() {
 }
 
 void tampilkanJadwal() {
-    printf("\n=== JADWAL KERETA WHOOSH HARI INI ===\n");
+    char title[] = "===JADWAL KERETA WHOOSH HARI INI===";
+    int consoleWidth = 85;
+    int titleLength = strlen(title);
+    int padding = (consoleWidth - titleLength) / 2;
+
+    for (int i = 0; i < padding; i++) {
+        printf(" ");
+    }
+    printf("%s\n", title);
+    printf("-----------------------------------------------------------------------------------------\n");
     printf("%-4s %-15s %-15s %-8s %-8s %-12s %-10s %-8s\n", 
            "ID", "Keberangkatan", "Tujuan", "Berangkat", "Tiba", "Tanggal", "Harga", "Tersedia");
     printf("-----------------------------------------------------------------------------------------\n");
@@ -349,9 +450,19 @@ void searchJadwal() {
     printf("Stasiun Tujuan: ");
     fgets(tujuan, MAX_NAMA, stdin);
     tujuan[strcspn(tujuan, "\n")] = 0;
+    printf("\n");
     
-    printf("\n=== HASIL PENCARIAN ===\n");
+    char title[] = "===HASIL PENCARIAN JADWAL KERETA WHOOSH===";
+    int consoleWidth = 60;
+    int titleLength = strlen(title);
+    int padding = (consoleWidth - titleLength) / 2;
+    for (int i = 0; i < padding; i++) {
+        printf(" ");
+    }
+    printf("%s\n", title);
+    printf("\n");
     printf("Rute: %s -> %s\n", keberangkatan, tujuan);
+    printf("---------------------------------------------------------------\n");
     printf("%-4s %-8s %-8s %-12s %-10s %-8s\n", 
            "ID", "Berangkat", "Tiba", "Tanggal", "Harga", "Tersedia");
     printf("---------------------------------------------------------------\n");
@@ -401,7 +512,9 @@ void pesanTiket() {
     int idJadwal, nomorKursi;
     char konfirmasi;
     
-    printf("\n=== PESAN TIKET KERETA ===\n");
+    printf("\nPESAN TIKET KERETA\n");
+    printf("\n");
+
     tampilkanJadwal();
     
     printf("\nMasukkan ID Jadwal yang ingin dipesan: ");
@@ -497,6 +610,7 @@ void lihatPemesananSaya() {
     
     printf("\n=== PEMESANAN SAYA ===\n");
     printf("Pelanggan: %s (ID: %d)\n", pelangganSaatIni->nama, pelangganSaatIni->id);
+    printf("\n");
     printf("===============================================\n");
     
     tampilkanPemesananPelanggan(rootPohonPemesanan, pelangganSaatIni->id);
