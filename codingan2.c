@@ -211,12 +211,19 @@ void loadPelanggan() {
     int accountCount = 0;
     nextIdPelanggan = 1; // Reset nextIdPelanggan
 
-    while (fscanf(file, "%d\n%[^\n]\n%[^\n]\n%[^\n]\n", &tempId, tempNama, tempTelepon, tempEmail, tempAlamat) == 5){
+    while (fscanf(file, "%d\n%[^\n]\n%[^\n]\n%[^\n]\n%[^\n]\n",
+                  &tempId, tempNama, tempTelepon, tempEmail, tempAlamat) == 5) {
         Pelanggan* newPelanggan = (Pelanggan*)malloc(sizeof(Pelanggan));
         if(newPelanggan == NULL) {
             printf("Gagal alokasi memori saat memuat pelanggan.\n");
             break;
         }
+
+        tempNama[strcspn(tempNama, "\r")] = 0;
+        tempTelepon[strcspn(tempTelepon, "\r")] = 0; // <<< Penting untuk telepon
+        tempEmail[strcspn(tempEmail, "\r")] = 0;
+        tempAlamat[strcspn(tempAlamat, "\r")] = 0;
+        
         newPelanggan->id = tempId;
         strcpy(newPelanggan->nama, tempNama);
         strcpy(newPelanggan->telepon, tempTelepon);
@@ -224,7 +231,7 @@ void loadPelanggan() {
         strcpy(newPelanggan->alamat, tempAlamat);
         newPelanggan->next = NULL;
 
-        if (headPelanggan = NULL) {
+        if (headPelanggan == NULL) {
             headPelanggan = newPelanggan;
         } else {
             Pelanggan* last = headPelanggan;
