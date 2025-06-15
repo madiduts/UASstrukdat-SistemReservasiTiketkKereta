@@ -6,7 +6,7 @@
 
 #define MAX_NAMA 100
 #define MAX_KURSI 100
-#define FILE_NAMA_PELANGGAN "pelanggan.txt"
+#define FILE_NAMA_PELANGGAN "pelanggan.txt"2
 
 // Struktur untuk data pelanggan
 typedef struct Pelanggan {
@@ -739,8 +739,8 @@ void tampilkanPetaKursi(JadwalKereta* jadwal) {
                     printf("[%02d] ", i);
                 }
                 count++;
-                if(count % 4 == 0) printf("    "); // Gang tengah
-                if(count % 8 == 0) printf("\n");   // Baris baru
+                if(count % 2 == 0) printf("    "); 
+                if(count % 4 == 0) printf("\n");   
                 break;
             }
             currentKursi = currentKursi->next;
