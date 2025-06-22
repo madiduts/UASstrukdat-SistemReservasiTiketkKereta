@@ -4,9 +4,10 @@
 #include <time.h>
 #include <ctype.h> // Untuk tolower
 
+
 #define MAX_NAMA 100
 #define MAX_KURSI 100
-#define FILE_NAMA_PELANGGAN "pelanggan.txt"2
+#define FILE_NAMA_PELANGGAN "pelanggan.txt"
 
 // Struktur untuk data pelanggan
 typedef struct Pelanggan {
